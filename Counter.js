@@ -1,23 +1,30 @@
-// Stale Cloure
-function useState(initialValue) {
-  var _val = initialValue; // _val is a local variable created by useState
-
-  function setState(newVal) {
-    // same
-    _val = newVal; // setting _val without exposing _val
-  }
-  return [_val, setState]; // exposing functions for external use
-}
+const MyReact = (function () {
+  let _val;
+  return {
+    render(Component) {
+      const Comp = Component();
+      Comp.render();
+      return Comp;
+    },
+    useState(initialValue) {
+      _val = _val || initialValue;
+      function setState(newVal) {
+        _val = newVal;
+      }
+      return [_val, setState];
+    },
+  };
+})();
 
 function Counter() {
-  const [count, setCount] = useState(0);
+  const [count, setCount] = MyReact.useState(0);
   return {
     click: () => setCount(count + 1),
     render: () => console.log("render: ", { count }),
   };
 }
 
-const C = Counter();
-C.render();
-C.click();
-C.render();
+let App;
+App = MyReact.render(Counter);
+App.click();
+App = MyReact.render(Counter);
