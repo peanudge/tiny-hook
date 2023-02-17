@@ -1,5 +1,5 @@
 const MyReact = (function () {
-  let _val;
+  let _val, _deps;
   return {
     render(Component) {
       const Comp = Component();
@@ -13,18 +13,39 @@ const MyReact = (function () {
       }
       return [_val, setState];
     },
+    useEffect(callback, depArray) {
+      const hasNoDeps = !depArray;
+      const hasChangedDeps = _deps
+        ? !depArray.every((el, i) => el === _deps[i])
+        : true;
+
+      if (hasNoDeps || hasChangedDeps) {
+        callback();
+        _deps = depArray;
+      }
+    },
   };
 })();
 
 function Counter() {
   const [count, setCount] = MyReact.useState(0);
+  MyReact.useEffect(() => {
+    console.log("effect", count);
+  }, [count]);
   return {
     click: () => setCount(count + 1),
-    render: () => console.log("render: ", { count }),
+    noop: () => setCount(count),
+    render: () => {
+      console.log("render: ", { count });
+    },
   };
 }
 
 let App;
+App = MyReact.render(Counter);
+App.click();
+App = MyReact.render(Counter);
+App.noop();
 App = MyReact.render(Counter);
 App.click();
 App = MyReact.render(Counter);
